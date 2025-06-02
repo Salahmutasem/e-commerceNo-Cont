@@ -1,69 +1,46 @@
-const { default: slugify } = require("slugify");
-const asyncHandler = require("express-async-handler");
+const slugify = require("slugify");
 const Product = require("../models/productModel");
 const ApiError = require("../utils/apiError");
-// @desc Get list of products
-// @ route GET /api/v1/products
-// @access Public
-exports.getProducts = asyncHandler(async (req, res) => {
-  const page = req.query.page * 1 || 1; // * 1 to convert it to a number
-  const limit = req.query.limit * 1 || 5;
+
+// Get all products with pagination
+exports.getProducts = async (page = 1, limit = 5) => {
   const skip = (page - 1) * limit;
   const products = await Product.find({})
     .skip(skip)
     .limit(limit)
     .populate({ path: "category", select: "name -_id" });
+  return { products, page };
+};
 
-  res.status(200).json({ results: products.length, page, data: products });
-});
-// @ desc GET specific products by id
-// @ route GET /api/v1/produtcts/:id
-// @access Public
-exports.getProduct = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
+// Get single product by ID
+exports.getProduct = async (id) => {
   const product = await Product.findById(id).populate({
     path: "category",
     select: "name -_id",
   });
-  if (!product) {
-    return next(new ApiError(`No product for this id ${id}`, 404));
-  }
-  res.status(200).json({ data: product });
-});
+  if (!product) throw new ApiError(`No product for this id: ${id}`, 404);
+  return product;
+};
 
-// @desc create product
-// @route POST /api/v1/products
-// @access Private
-exports.createProduct = asyncHandler(async (req, res) => {
-  req.body.slug = slugify(req.body.title);
-  const product = await Product.create(req.body);
-  res.status(201).json({ data: product });
-});
-// @ desc Update specific product
-// @route PUT /api/v1/products/:id
-// @access private
-exports.updateProduct = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  if (req.body.title) {
-    req.body.slug = slugify(req.body.title);
-  }
+// Create product
+exports.createProduct = async (data) => {
+  data.slug = slugify(data.title);
+  const product = await Product.create(data);
+  return product;
+};
 
-  const product = await Product.findByIdAndUpdate({ _id: id }, req.body, {
-    new: true,
-  });
-  if (!product) {
-    return next(new ApiError(`No product for this id ${id}`, 404));
+// Update product
+exports.updateProduct = async (id, data) => {
+  if (data.title) {
+    data.slug = slugify(data.title);
   }
-  res.status(200).json({ data: product });
-});
-// @desc delete specific product
-// @route DELETE /api/v1/products/:id
-// @access Private
-exports.deleteProduct = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
+  const product = await Product.findByIdAndUpdate(id, data, { new: true });
+  if (!product) throw new ApiError(`No product for this id: ${id}`, 404);
+  return product;
+};
+
+// Delete product
+exports.deleteProduct = async (id) => {
   const product = await Product.findByIdAndDelete(id);
-  if (!product) {
-    return next(new ApiError(`No product for this id ${id}`, 404));
-  }
-  res.status(204).send();
-});
+  if (!product) throw new ApiError(`No product for this id: ${id}`, 404);
+};

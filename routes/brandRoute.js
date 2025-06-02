@@ -1,12 +1,12 @@
 const express = require("express");
 
 const {
-  getBrands,
-  createBrand,
-  getBrand,
-  updateBrand,
-  deleteBrand,
-} = require("../services/brandService ");
+  getBrandsController,
+  createBrandController,
+  getBrandController,
+  updateBrandController,
+  deleteBrandController,
+} = require("../controllers/brandController");
 const {
   getBrandValidator,
   createBrandValidator,
@@ -16,11 +16,14 @@ const {
 
 const router = express.Router();
 
-router.route("/").get(getBrands).post(createBrandValidator, createBrand);
+router
+  .route("/")
+  .get(getBrandsController)
+  .post(createBrandValidator, createBrandController);
 router
   .route("/:id")
-  .get(getBrandValidator, getBrand)
-  .put(updateBrandValidator, updateBrand)
-  .delete(deleteBrandValidator, deleteBrand);
+  .get(getBrandValidator, getBrandController)
+  .put(updateBrandValidator, updateBrandController)
+  .delete(deleteBrandValidator, deleteBrandController);
 
 module.exports = router;

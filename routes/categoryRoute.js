@@ -1,12 +1,12 @@
 const express = require("express");
 
 const {
-  getCategories,
-  createCategory,
-  getCategory,
-  updateCategory,
-  deleteCategory,
-} = require("../services/categoryService");
+  getCategoriesController,
+  createCategoryController,
+  getCategoryController,
+  updateCategoryController,
+  deleteCategoryController,
+} = require("../controllers/categoryController");
 const {
   getCategoryValidator,
   createCategoryValidator,
@@ -22,12 +22,12 @@ router.use("/:categoryId/subCategories", subCategoryRoute);
 
 router
   .route("/")
-  .get(getCategories)
-  .post(createCategoryValidator, createCategory);
+  .get(getCategoriesController)
+  .post(createCategoryValidator, createCategoryController);
 router
   .route("/:id")
-  .get(getCategoryValidator, getCategory)
-  .put(updateCategoryValidator, updateCategory)
-  .delete(deleteCategoryValidator, deleteCategory);
+  .get(getCategoryValidator, getCategoryController)
+  .put(updateCategoryValidator, updateCategoryController)
+  .delete(deleteCategoryValidator, deleteCategoryController);
 
 module.exports = router;
